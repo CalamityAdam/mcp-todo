@@ -2,6 +2,18 @@
 
 A todo list server built with the Model Context Protocol (MCP) that supports both stdio and HTTP transports.
 
+## Quick Start
+
+```bash
+npm install
+
+# For HTTP server (easier testing)
+npm run dev:http
+
+# For MCP stdio (client integration)
+MCP_STDIO=1 npm run dev
+```
+
 ## Setup
 
 ```bash
@@ -40,7 +52,9 @@ Configure in Cursor's `.cursor/mcp.json`:
 For HTTP-based access with session management:
 
 ```bash
-npm run dev  # Starts HTTP server on port 3000
+npm run dev MCP_STDIO=1 # Starts MCP stdio server
+npm run dev:http  # Starts HTTP server on port 3000
+# or directly: npx tsx src/http.ts
 ```
 
 The server exposes endpoints at `http://localhost:3000/mcp`:
