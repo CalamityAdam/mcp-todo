@@ -1,4 +1,5 @@
 // http.ts
+import "dotenv/config";
 import express from "express";
 import { randomUUID } from "node:crypto";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
