@@ -1,0 +1,11 @@
+node_modules
+dist
+.env
+.mcp-todos.json
+*.log
+.git
+.gitignore
+test-*.js
+server.log
+fly.toml
+README.md

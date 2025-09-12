@@ -6,7 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "NODE_ENV=production node dist/server.js"
   },
   "keywords": [],
   "author": "mr.sisk",
@@ -16,6 +16,8 @@
     "@modelcontextprotocol/sdk": "^1.17.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "openai": "^5.20.1",
+    "twilio": "^5.9.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
