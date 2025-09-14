@@ -31,13 +31,18 @@ async function getOrCreateTransport(req: import("express").Request) {
   const headerKey = "mcp-session-id";
   const incomingId = (req.header(headerKey) as string | undefined) || undefined;
 
+  console.log("getOrCreateTransport - Session ID:", incomingId);
+
   if (incomingId && sessions.has(incomingId)) {
+    console.log("Reusing existing transport for session:", incomingId);
     return sessions.get(incomingId)!;
   }
 
+  console.log("Creating new transport");
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: () => randomUUID(),
     onsessioninitialized: (id): void => {
+      console.log("Session initialized with ID:", id);
       sessions.set(id, transport);
     },
     // optional: onsessionclosed: (id) => sessions.delete(id),
@@ -50,9 +55,22 @@ async function getOrCreateTransport(req: import("express").Request) {
 
 // POST = client → server (JSON-RPC)
 app.post("/mcp", async (req, res) => {
-  if (!assertAuth(req, res)) return;
-  const transport = await getOrCreateTransport(req);
-  await transport.handleRequest(req, res);
+  console.log("MCP POST request received");
+  console.log("Headers:", req.headers);
+  console.log("Body type:", typeof req.body);
+  
+  if (!assertAuth(req, res)) {
+    console.log("Authentication failed");
+    return;
+  }
+  
+  try {
+    const transport = await getOrCreateTransport(req);
+    await transport.handleRequest(req, res);
+  } catch (error) {
+    console.error("Error handling MCP request:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 // GET = server → client (SSE stream for server->client notifications)

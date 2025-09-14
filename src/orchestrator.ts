@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { McpClient } from "./mcp-client.js";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -10,36 +11,11 @@ interface OrchestratorParams {
   text: string;
 }
 
-// Simple MCP client implementation
-async function callMcpTool(toolName: string, args: any) {
-  const response = await fetch(process.env.MCP_URL!, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${process.env.TODO_MCP_TOKEN}`,
-    },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      method: "tools/call",
-      params: {
-        name: toolName,
-        arguments: args,
-      },
-      id: Date.now(),
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`MCP call failed: ${response.statusText}`);
-  }
-
-  const result = await response.json() as any;
-  if (result.error) {
-    throw new Error(`MCP error: ${result.error.message}`);
-  }
-
-  return result.result?.content?.[0]?.text || "Operation completed";
-}
+// Create a single MCP client instance
+const mcpClient = new McpClient(
+  process.env.MCP_URL!,
+  process.env.TODO_MCP_TOKEN
+);
 
 export async function orchestrateRequest({
   userId,
@@ -156,7 +132,7 @@ Available tools:
         if (toolCall.type === 'function') {
           try {
             const args = JSON.parse(toolCall.function.arguments);
-            const result = await callMcpTool(toolCall.function.name, args);
+            const result = await mcpClient.callTool(toolCall.function.name, args);
             toolResults.push(result);
           } catch (error) {
             console.error(`Tool call error for ${toolCall.function.name}:`, error);
