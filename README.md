@@ -1,102 +1,109 @@
-# MCP Todo
+# MCP Todo — Discord Edition
 
-A todo list server built with the Model Context Protocol (MCP) that supports both stdio and HTTP transports.
-
-## Quick Start
-
-```bash
-npm install
-
-# For HTTP server (easier testing)
-npm run dev:http
-
-# For MCP stdio (client integration)
-MCP_STDIO=1 npm run dev
-```
-
-## Setup
-
-```bash
-npm install
-npm run build
-```
-
-## Usage
-
-### Stdio Transport (MCP Client Integration)
-
-For use with MCP clients like Cursor:
-
-```bash
-MCP_STDIO=1 npm run dev
-```
-
-Configure in Cursor's `.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "todo-mcp": {
-      "command": "npx",
-      "args": ["-y", "tsx", "src/server.ts"],
-      "env": {
-        "MCP_STDIO": "1"
-      }
-    }
-  }
-}
-```
-
-### HTTP Transport (Streamable HTTP)
-
-For HTTP-based access with session management:
-
-```bash
-npm run dev MCP_STDIO=1 # Starts MCP stdio server
-npm run dev:http  # Starts HTTP server on port 3000
-# or directly: npx tsx src/http.ts
-```
-
-The server exposes endpoints at `http://localhost:3000/mcp`:
-- `POST /mcp` - JSON-RPC requests
-- `GET /mcp` - SSE stream for server notifications
-- `DELETE /mcp` - End session
-
-#### Authentication
-
-Set `TODO_MCP_TOKEN` environment variable to enable bearer token authentication:
-
-```bash
-TODO_MCP_TOKEN=your-secret-token npm run dev
-```
-
-Then include in requests:
-```
-Authorization: Bearer your-secret-token
-```
+A household task management system featuring a Discord bot interface, MCP (Model Context Protocol) server, and OpenAI-powered orchestration. Perfect for coordinating family moves and shared task lists.
 
 ## Features
 
-- Add todos with unique IDs
-- List all todos with structured output
-- Toggle todo completion status
-- Remove todos by ID
-- Persistent JSON storage in `~/.mcp-todos.json`
-- Session-based HTTP transport with SSE support
-- Optional bearer token authentication
+- **Discord Slash Commands**: Manage tasks directly from Discord with intuitive `/todo` commands
+- **MCP Server**: Standards-based tool interface accessible via HTTP
+- **Smart Orchestration**: Natural language processing powered by OpenAI
+- **Persistent Storage**: Tasks survive restarts with JSON file storage
+- **Multi-Channel Support**: Use via Discord bot or direct MCP connections
 
-## Available Tools
+## Quick Start
 
-- `list_todos` - Get all todos in structured format
-- `add_todo` - Add a new todo (requires title)
-- `toggle_todo` - Toggle completion status (requires id)
-- `remove_todo` - Delete a todo (requires id)
+### Prerequisites
+- Node.js 20+
+- Discord account and server
+- OpenAI API key
+- Fly.io account (for deployment)
 
-## Resources
+### Local Development
 
-- `todos://list` - JSON resource containing all todos
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-## Architecture
+2. **Configure environment**
+   - Copy `.env.example` to `.env`
+   - Fill in your Discord bot token, OpenAI API key, and other required values
 
-- `src/server.ts` - Core MCP server with todo logic and stdio transport
-- `src/http.ts` - HTTP transport wrapper with Express and session management
+3. **Build the project**
+   ```bash
+   npm run build
+   ```
+
+4. **Register Discord commands** (development guild)
+   ```bash
+   npm run discord:register:dev
+   ```
+
+5. **Start the server**
+   ```bash
+   npm run dev
+   ```
+
+6. **Try it out in Discord!**
+   Use `/todo add`, `/todo list`, and other commands in your Discord server
+
+## Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DISCORD_TOKEN` | Discord bot token from Developer Portal | Yes |
+| `DISCORD_CLIENT_ID` | Discord application ID | Yes |
+| `DISCORD_GUILD_ID` | Development server ID (optional for production) | No |
+| `OPENAI_API_KEY` | OpenAI API key for orchestration | Yes |
+| `MCP_URL` | Public HTTPS URL to the /mcp endpoint | Yes |
+| `TODO_MCP_TOKEN` | Bearer token for MCP authentication | Yes |
+| `DATA_DIR` | Path to persistent storage directory | Yes |
+| `PORT` | HTTP server port (default: 3000) | No |
+
+## Available Scripts
+
+- `npm run dev` - Start development server with Discord bot
+- `npm run dev:stdio` - Run MCP server in stdio mode for testing
+- `npm run build` - Build TypeScript to JavaScript
+- `npm start` - Start production server
+- `npm run discord:register:dev` - Register slash commands to development guild
+- `npm run discord:register:global` - Register slash commands globally
+
+## Documentation
+
+- [Deployment Guide](docs/deployment.md) - Complete setup instructions for Discord and Fly.io
+- [Architecture Summary](docs/summary.md) - Technical overview and data flow
+- [Quick Start Guide](docs/quickstart.md) - Minimal setup steps
+- [Family User Guide](docs/one-sheet-for-family.md) - Simple instructions for non-technical users
+
+## Discord Commands
+
+All commands use the `/todo` prefix:
+
+- `/todo add <title>` - Create a new task
+- `/todo list` - Show all remaining tasks
+- `/todo toggle <id>` - Mark task as done/not done
+- `/todo note <id> <note>` - Add a note to a task
+- `/todo remove <id>` - Delete a task
+
+## Architecture Overview
+
+```
+Discord User → Discord Bot → Orchestrator → MCP Client → MCP Server → JSON Storage
+                                   ↓
+                              OpenAI API
+```
+
+The system uses:
+- Discord.js for bot interactions
+- OpenAI Responses API with MCP tool for intelligent processing
+- Express.js for the MCP HTTP server
+- JSON file storage with configurable persistence path
+
+## Support
+
+For issues, questions, or contributions, please refer to the documentation or create an issue in the repository.
+
+## License
+
+ISC

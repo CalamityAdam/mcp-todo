@@ -4,6 +4,7 @@ import express from "express";
 import { randomUUID } from "node:crypto";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createTodoMcpServer } from "./server.js"; // import the factory
+import { DiscordBot } from "./discord/bot.js";
 
 const app = express();
 // ⚠️ Do NOT use app.use(express.json()) here.
@@ -76,6 +77,39 @@ app.delete("/mcp", async (req, res) => {
 });
 
 const PORT = Number(process.env.PORT) || 3000;
-app.listen(PORT, () => {
+
+// Start HTTP server
+const server = app.listen(PORT, async () => {
   console.log(`MCP Streamable HTTP listening on http://localhost:${PORT}/mcp`);
+  
+  // Start Discord bot if token is provided
+  if (process.env.DISCORD_TOKEN) {
+    try {
+      const discordBot = new DiscordBot();
+      await discordBot.start();
+      console.log("Discord bot started successfully");
+      
+      // Handle graceful shutdown
+      process.on("SIGINT", async () => {
+        console.log("Shutting down...");
+        await discordBot.stop();
+        server.close(() => {
+          process.exit(0);
+        });
+      });
+      
+      process.on("SIGTERM", async () => {
+        console.log("Shutting down...");
+        await discordBot.stop();
+        server.close(() => {
+          process.exit(0);
+        });
+      });
+    } catch (error) {
+      console.error("Failed to start Discord bot:", error);
+      // Continue running HTTP server even if Discord bot fails
+    }
+  } else {
+    console.log("Discord bot not started (DISCORD_TOKEN not provided)");
+  }
 });

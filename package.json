@@ -4,10 +4,12 @@
   "main": "dist/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx src/server.ts",
-    "dev:http": "tsx src/http.ts",
+    "dev": "tsx src/http.ts",
+    "dev:stdio": "MCP_STDIO=1 tsx src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/http.js",
+    "discord:register:dev": "tsx src/discord/register-commands.ts",
+    "discord:register:global": "DISCORD_GUILD_ID= tsx src/discord/register-commands.ts"
   },
   "keywords": [],
   "author": "mr.sisk",
@@ -15,8 +17,10 @@
   "description": "",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.5",
+    "discord.js": "^14.22.1",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "openai": "^5.20.2",
     "zod": "^3.25.76"
   },
   "devDependencies": {
