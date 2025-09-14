@@ -4,6 +4,7 @@ import express from "express";
 import { randomUUID } from "node:crypto";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createTodoMcpServer } from "./server.js"; // import the factory
+import { DiscordBot } from "./discord/bot.js";
 
 const app = express();
 // ⚠️ Do NOT use app.use(express.json()) here.
@@ -30,13 +31,18 @@ async function getOrCreateTransport(req: import("express").Request) {
   const headerKey = "mcp-session-id";
   const incomingId = (req.header(headerKey) as string | undefined) || undefined;
 
+  console.log("getOrCreateTransport - Session ID:", incomingId);
+
   if (incomingId && sessions.has(incomingId)) {
+    console.log("Reusing existing transport for session:", incomingId);
     return sessions.get(incomingId)!;
   }
 
+  console.log("Creating new transport");
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: () => randomUUID(),
     onsessioninitialized: (id): void => {
+      console.log("Session initialized with ID:", id);
       sessions.set(id, transport);
     },
     // optional: onsessionclosed: (id) => sessions.delete(id),
@@ -49,9 +55,22 @@ async function getOrCreateTransport(req: import("express").Request) {
 
 // POST = client → server (JSON-RPC)
 app.post("/mcp", async (req, res) => {
-  if (!assertAuth(req, res)) return;
-  const transport = await getOrCreateTransport(req);
-  await transport.handleRequest(req, res);
+  console.log("MCP POST request received");
+  console.log("Headers:", req.headers);
+  console.log("Body type:", typeof req.body);
+  
+  if (!assertAuth(req, res)) {
+    console.log("Authentication failed");
+    return;
+  }
+  
+  try {
+    const transport = await getOrCreateTransport(req);
+    await transport.handleRequest(req, res);
+  } catch (error) {
+    console.error("Error handling MCP request:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 // GET = server → client (SSE stream for server->client notifications)
@@ -76,6 +95,39 @@ app.delete("/mcp", async (req, res) => {
 });
 
 const PORT = Number(process.env.PORT) || 3000;
-app.listen(PORT, () => {
+
+// Start HTTP server
+const server = app.listen(PORT, async () => {
   console.log(`MCP Streamable HTTP listening on http://localhost:${PORT}/mcp`);
+  
+  // Start Discord bot if token is provided
+  if (process.env.DISCORD_TOKEN) {
+    try {
+      const discordBot = new DiscordBot();
+      await discordBot.start();
+      console.log("Discord bot started successfully");
+      
+      // Handle graceful shutdown
+      process.on("SIGINT", async () => {
+        console.log("Shutting down...");
+        await discordBot.stop();
+        server.close(() => {
+          process.exit(0);
+        });
+      });
+      
+      process.on("SIGTERM", async () => {
+        console.log("Shutting down...");
+        await discordBot.stop();
+        server.close(() => {
+          process.exit(0);
+        });
+      });
+    } catch (error) {
+      console.error("Failed to start Discord bot:", error);
+      // Continue running HTTP server even if Discord bot fails
+    }
+  } else {
+    console.log("Discord bot not started (DISCORD_TOKEN not provided)");
+  }
 });

@@ -12,10 +12,11 @@ export const TodoSchema = z.object({
   id: z.number().int().positive(),
   title: z.string().min(1),
   done: z.boolean(),
+  notes: z.array(z.string()).optional(),
 });
 type Todo = z.infer<typeof TodoSchema>;
 
-const DB_PATH = path.join(process.env.HOME || process.cwd(), ".mcp-todos.json");
+const DB_PATH = path.join(process.env.DATA_DIR || process.env.HOME || process.cwd(), "mcp-todos.json");
 
 async function readTodos(): Promise<Todo[]> {
   try {
@@ -79,7 +80,7 @@ export function createTodoMcpServer() {
     async ({ title }) => {
       const todos = await readTodos();
       const id = (todos.at(-1)?.id ?? 0) + 1;
-      todos.push({ id, title, done: false });
+      todos.push({ id, title, done: false, notes: [] });
       await writeTodos(todos);
       return { content: [{ type: "text", text: `Added #${id}: ${title}` }] };
     }
@@ -125,6 +126,36 @@ export function createTodoMcpServer() {
         return { content: [{ type: "text", text: `No todo with id ${id}` }] };
       await writeTodos(next);
       return { content: [{ type: "text", text: `Removed #${id}` }] };
+    }
+  );
+
+  server.registerTool(
+    "add_note",
+    {
+      title: "Add Note to Todo",
+      description: "Add a note to an existing todo item",
+      inputSchema: { 
+        id: z.number().int().positive(),
+        note: z.string().min(1)
+      },
+    },
+    async ({ id, note }) => {
+      const todos = await readTodos();
+      const i = todos.findIndex((t) => t.id === id);
+      if (i === -1)
+        return { content: [{ type: "text", text: `No todo with id ${id}` }] };
+      const todo = todos[i]!;
+      if (!todo.notes) todo.notes = [];
+      todo.notes.push(note);
+      await writeTodos(todos);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Added note to #${id}: "${note}"`,
+          },
+        ],
+      };
     }
   );
 
