@@ -1,17 +1,14 @@
-# MCP Todo
+# MCP Todo SMS App
 
-A todo list server built with the Model Context Protocol (MCP) that supports both stdio and HTTP transports.
+A SMS-based todo list manager that combines Model Context Protocol (MCP) with Twilio for SMS communication and OpenAI for natural language processing.
 
 ## Quick Start
 
 ```bash
 npm install
 
-# For HTTP server (easier testing)
-npm run dev:http
-
-# For MCP stdio (client integration)
-MCP_STDIO=1 npm run dev
+# For HTTP server (default)
+npm run dev
 ```
 
 ## Setup
@@ -23,44 +20,20 @@ npm run build
 
 ## Usage
 
-### Stdio Transport (MCP Client Integration)
-
-For use with MCP clients like Cursor:
-
-```bash
-MCP_STDIO=1 npm run dev
-```
-
-Configure in Cursor's `.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "todo-mcp": {
-      "command": "npx",
-      "args": ["-y", "tsx", "src/server.ts"],
-      "env": {
-        "MCP_STDIO": "1"
-      }
-    }
-  }
-}
-```
-
-### HTTP Transport (Streamable HTTP)
+### HTTP Transport
 
 For HTTP-based access with session management:
 
 ```bash
-npm run dev MCP_STDIO=1 # Starts MCP stdio server
-npm run dev:http  # Starts HTTP server on port 3000
-# or directly: npx tsx src/http.ts
+npm run dev  # Starts HTTP server on port 3000
 ```
 
-The server exposes endpoints at `http://localhost:3000/mcp`:
+The server exposes endpoints:
 - `POST /mcp` - JSON-RPC requests
-- `GET /mcp` - SSE stream for server notifications
+- `GET /mcp` - SSE stream for server notifications  
 - `DELETE /mcp` - End session
+- `GET /health` - Health check endpoint (no auth required)
+- `POST /twilio/sms` - Twilio SMS webhook endpoint
 
 #### Authentication
 
@@ -98,5 +71,7 @@ Authorization: Bearer your-secret-token
 
 ## Architecture
 
-- `src/server.ts` - Core MCP server with todo logic and stdio transport
-- `src/http.ts` - HTTP transport wrapper with Express and session management
+- `src/server.ts` - Core MCP server with todo logic (factory function)
+- `src/http.ts` - HTTP server with Express, session management, and Twilio webhook handling
+- `src/twilio.ts` - Twilio integration for SMS sending and webhook validation
+- `src/ai/orchestrator.ts` - OpenAI integration for natural language processing
