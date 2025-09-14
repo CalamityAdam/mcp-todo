@@ -80,26 +80,29 @@ app.delete("/mcp", async (req, res) => {
 // Import handleSms dynamically to avoid initialization issues
 let handleSms: any;
 
-// Twilio SMS webhook route
+// Twilio WhatsApp webhook route
 app.post(
-  "/twilio/sms",
+  "/twilio/whatsapp",
   express.urlencoded({ extended: false }), // Twilio sends form-encoded
   twilioWebhook, // validation
   async (req, res) => {
     const from = String(req.body.From || "");
     const body = String(req.body.Body || "");
     
+    // Extract phone number from WhatsApp format (whatsapp:+1234567890 -> +1234567890)
+    const phoneNumber = from.replace('whatsapp:', '');
+    
     // Check if the sender is allowed
-    const allowedNumbers = process.env.ALLOWED_SMS_FROM?.split(",") || [];
-    if (!allowedNumbers.includes(from)) {
+    const allowedNumbers = process.env.ALLOWED_WHATSAPP_FROM?.split(",") || [];
+    if (allowedNumbers.length > 0 && !allowedNumbers.includes(phoneNumber)) {
       return res.type("text/xml").send("<Response></Response>"); // no-op
     }
     
-    // Fast ACK via TwiML
+    // Fast ACK via TwiML (WhatsApp doesn't show typing indicators like SMS)
     const MessagingResponse = (twilio as any).twiml.MessagingResponse;
     const twiml = new MessagingResponse();
-    twiml.message("Got it—working on that now. I'll text you back.");
-    res.type("text/xml").send(twiml.toString()); // return immediately
+    // For WhatsApp, we don't need to send an immediate response
+    res.type("text/xml").send(twiml.toString()); // return empty response
     
     // Kick off async AI flow
     queueMicrotask(async () => {
@@ -109,16 +112,23 @@ app.post(
           const module = await import("./ai/orchestrator.js");
           handleSms = module.handleSms;
         }
+        // Pass the full WhatsApp format to maintain consistency
         await handleSms({ from, text: body });
       } catch (error) {
-        console.error("Error handling SMS:", error);
+        console.error("Error handling WhatsApp message:", error);
       }
     });
   }
 );
 
+// Keep SMS endpoint for backward compatibility
+app.post("/twilio/sms", (req, res) => {
+  res.status(200).send("Please use /twilio/whatsapp endpoint for WhatsApp messages");
+
+});
+
 const PORT = Number(process.env.PORT) || 3000;
 app.listen(PORT, () => {
   console.log(`MCP Streamable HTTP listening on http://localhost:${PORT}/mcp`);
-  console.log(`Twilio webhook at http://localhost:${PORT}/twilio/sms`);
+  console.log(`Twilio WhatsApp webhook at http://localhost:${PORT}/twilio/whatsapp`);
 });

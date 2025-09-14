@@ -1,12 +1,14 @@
-# MCP Todo SMS App - Implementation Summary
+# MCP Todo WhatsApp App - Implementation Summary
 
 ## Overview
 
-This application is a SMS-based todo list manager that combines:
+This application is a WhatsApp-based todo list manager that combines:
 - Model Context Protocol (MCP) server for structured todo operations
-- Twilio integration for SMS communication
+- Twilio WhatsApp Business API integration
 - OpenAI integration for natural language processing
 - Fly.io deployment with persistent storage
+
+**Note**: This implementation uses WhatsApp instead of SMS to avoid A2P 10DLC registration requirements.
 
 ## Architecture
 
@@ -20,13 +22,14 @@ This application is a SMS-based todo list manager that combines:
 
 2. **HTTP Server** (`src/http.ts`)
    - Express server with MCP HTTP transport
-   - Twilio webhook endpoint at `/twilio/sms`
+   - Twilio WhatsApp webhook endpoint at `/twilio/whatsapp`
    - Authentication via bearer token
 
 3. **Twilio Integration** (`src/twilio.ts`)
    - Webhook validation middleware
-   - SMS sending with fallback for development
-   - Support for both phone numbers and messaging services
+   - WhatsApp message sending with fallback for development
+   - Support for sandbox (development) and production numbers
+   - Automatic 'whatsapp:' prefix handling
 
 4. **AI Orchestrator** (`src/ai/orchestrator.ts`)
    - OpenAI integration for natural language understanding
@@ -36,7 +39,7 @@ This application is a SMS-based todo list manager that combines:
 
 ## Features
 
-### SMS Commands
+### WhatsApp Commands
 
 - **Add Task**: "add task to pack kitchen items"
 - **List Tasks**: "list tasks" or "list open tasks"
@@ -62,7 +65,7 @@ This application is a SMS-based todo list manager that combines:
 
 - Bearer token authentication for MCP endpoints
 - Twilio webhook signature validation
-- Allowed phone numbers whitelist
+- Allowed WhatsApp numbers whitelist
 - Environment-based configuration
 
 ## Deployment
@@ -80,8 +83,8 @@ cp .env.example .env
 # Run development server
 npm run dev
 
-# Test SMS webhook
-node test-sms.js "add task to pack"
+# Test WhatsApp webhook
+node test-whatsapp.js "add task to pack"
 ```
 
 ### Production (Fly.io)
@@ -95,24 +98,25 @@ flyctl secrets set OPENAI_API_KEY=...
 flyctl secrets set TODO_MCP_TOKEN=...
 # ... (see README-DEPLOYMENT.md)
 
-# Configure Twilio webhook
-# Point to: https://your-app.fly.dev/twilio/sms
+# Configure Twilio WhatsApp webhook
+# Point to: https://your-app.fly.dev/twilio/whatsapp
 ```
 
 ## Key Decisions
 
-1. **Household Scope**: Single shared todo list with createdBy tracking for future per-person filtering
-2. **Atomic Writes**: Write to temp file then rename to prevent corruption
-3. **Graceful Fallback**: Works without OpenAI/Twilio in development mode
-4. **MCP Integration**: Direct tool execution rather than JSON-RPC for simplicity
-5. **Persistent Storage**: Fly volume mounted at /data for production
+1. **WhatsApp over SMS**: Avoids A2P 10DLC registration requirements
+2. **Household Scope**: Single shared todo list with createdBy tracking for future per-person filtering
+3. **Atomic Writes**: Write to temp file then rename to prevent corruption
+4. **Graceful Fallback**: Works without OpenAI/Twilio in development mode
+5. **MCP Integration**: Direct tool execution rather than JSON-RPC for simplicity
+6. **Persistent Storage**: Fly volume mounted at /data for production
 
 ## Testing
 
 The app has been tested with:
-- Direct orchestrator testing (`test-direct.js`)
-- SMS webhook simulation (`test-sms.js`)
-- Manual Twilio integration
+- Direct orchestrator testing
+- WhatsApp webhook simulation (`test-whatsapp.js`)
+- Twilio WhatsApp Sandbox integration
 - Error handling for missing services
 
 ## Future Enhancements
@@ -122,4 +126,6 @@ The app has been tested with:
 3. Categories/tags for tasks
 4. Completed task archiving
 5. Multi-language support
-6. Voice call integration
+6. WhatsApp message templates for proactive notifications
+7. Rich media support (images, documents)
+8. Production WhatsApp Business API registration

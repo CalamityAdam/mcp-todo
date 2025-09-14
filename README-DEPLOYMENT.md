@@ -1,4 +1,4 @@
-# MCP Todo SMS App - Deployment Guide
+# MCP Todo WhatsApp App - Deployment Guide
 
 ## Prerequisites
 
@@ -40,26 +40,31 @@ flyctl secrets set OPENAI_API_KEY=sk-...
 flyctl secrets set TODO_MCP_TOKEN=your-secret-token
 flyctl secrets set TWILIO_ACCOUNT_SID=AC...
 flyctl secrets set TWILIO_AUTH_TOKEN=...
-flyctl secrets set TWILIO_MESSAGING_SERVICE_SID=MG...
-flyctl secrets set ALLOWED_SMS_FROM="+1234567890,+0987654321"
+flyctl secrets set TWILIO_WHATSAPP_NUMBER='whatsapp:+14155238886'  # Sandbox number
+flyctl secrets set ALLOWED_WHATSAPP_FROM="+1234567890,+0987654321"
 flyctl secrets set PUBLIC_BASE_URL="https://your-app.fly.dev"
 ```
 
-### 4. Configure Twilio
+### 4. Configure Twilio WhatsApp
 
-In your Twilio Console:
-1. Go to Phone Numbers > Manage > Active Numbers
-2. Select your phone number
-3. In the Messaging section, set the webhook URL to:
+#### For Sandbox (Development):
+1. Go to Twilio Console > Messaging > Try it out > Send a WhatsApp message
+2. Follow instructions to join your sandbox (send join code to +1 415 523 8886)
+3. In Sandbox Configuration, set the webhook URL to:
    ```
-   https://your-app.fly.dev/twilio/sms
+   https://your-app.fly.dev/twilio/whatsapp
    ```
 4. Set the HTTP method to `POST`
 5. Save the configuration
 
+#### For Production:
+1. Register your phone number for WhatsApp
+2. Get WhatsApp Business API approval
+3. Update TWILIO_WHATSAPP_NUMBER to your approved number
+
 ## Testing
 
-Send an SMS to your Twilio number with commands like:
+Send a WhatsApp message to your Twilio WhatsApp number with commands like:
 - "add task to pack kitchen items"
 - "list open tasks"
 - "add note to task 1: fragile items need bubble wrap"
@@ -84,6 +89,13 @@ flyctl ssh console
 ## Persistent Data
 
 The app stores todos in `/data/.mcp-todos.json` which is persisted in a Fly volume.
+
+## WhatsApp Specific Notes
+
+- **Sandbox Limitations**: The sandbox number (+1 415 523 8886) is shared and requires users to join with a code
+- **24-hour Window**: You can send freeform messages within 24 hours of user interaction
+- **Template Messages**: For initiating conversations after 24 hours, you need approved message templates
+- **No A2P Registration**: Unlike SMS, WhatsApp doesn't require A2P 10DLC registration
 
 To backup data:
 ```bash

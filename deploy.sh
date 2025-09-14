@@ -42,8 +42,8 @@ echo "  flyctl secrets set OPENAI_API_KEY=..."
 echo "  flyctl secrets set TODO_MCP_TOKEN=..."
 echo "  flyctl secrets set TWILIO_ACCOUNT_SID=..."
 echo "  flyctl secrets set TWILIO_AUTH_TOKEN=..."
-echo "  flyctl secrets set TWILIO_MESSAGING_SERVICE_SID=... (or TWILIO_PHONE_NUMBER=...)"
-echo "  flyctl secrets set ALLOWED_SMS_FROM='+1234567890,+0987654321'"
+echo "  flyctl secrets set TWILIO_WHATSAPP_NUMBER='whatsapp:+14155238886' (or your production WhatsApp number)"
+echo "  flyctl secrets set ALLOWED_WHATSAPP_FROM='+1234567890,+0987654321'"
 echo "  flyctl secrets set PUBLIC_BASE_URL='https://your-app.fly.dev'"
 
 read -p "Have you set all the required secrets? (y/n) " -n 1 -r
@@ -62,4 +62,4 @@ echo "✅ Deployment complete!"
 flyctl status
 echo ""
 echo "🔗 Your app URL: https://$(flyctl info -j | jq -r .App.Name).fly.dev"
-echo "📱 Configure your Twilio webhook to: https://$(flyctl info -j | jq -r .App.Name).fly.dev/twilio/sms"
+echo "📱 Configure your Twilio WhatsApp webhook to: https://$(flyctl info -j | jq -r .App.Name).fly.dev/twilio/whatsapp"

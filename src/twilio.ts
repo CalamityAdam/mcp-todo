@@ -24,8 +24,8 @@ function getTwilioClient() {
   return client;
 }
 
-// Send SMS function
-export async function sendSms(to: string, body: string) {
+// Send WhatsApp message function (renamed from sendSms)
+export async function sendWhatsAppMessage(to: string, body: string) {
   // Check if Twilio is properly configured
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -33,36 +33,33 @@ export async function sendSms(to: string, body: string) {
   if (!accountSid || !authToken || 
       accountSid.includes('your-twilio') || 
       authToken.includes('your-twilio')) {
-    console.log(`[SMS Mock] To: ${to}`);
-    console.log(`[SMS Mock] Body: ${body}`);
+    console.log(`[WhatsApp Mock] To: ${to}`);
+    console.log(`[WhatsApp Mock] Body: ${body}`);
     return { sid: 'mock-message-sid' };
   }
 
-  const fromNumber = process.env.TWILIO_PHONE_NUMBER;
-  const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
-
-  if (!fromNumber && !messagingServiceSid) {
-    throw new Error("Either TWILIO_PHONE_NUMBER or TWILIO_MESSAGING_SERVICE_SID must be set");
-  }
-
-  const messageOptions: any = {
-    to,
+  // Get WhatsApp-enabled number (sandbox or production)
+  const whatsappNumber = process.env.TWILIO_WHATSAPP_NUMBER || 'whatsapp:+14155238886'; // Default to sandbox
+  
+  // Ensure the 'to' number has whatsapp: prefix
+  const toNumber = to.startsWith('whatsapp:') ? to : `whatsapp:${to}`;
+  
+  const messageOptions = {
+    from: whatsappNumber,
+    to: toNumber,
     body,
   };
-
-  if (messagingServiceSid) {
-    messageOptions.messagingServiceSid = messagingServiceSid;
-  } else {
-    messageOptions.from = fromNumber;
-  }
 
   try {
     const twilioClient = getTwilioClient();
     const message = await twilioClient.messages.create(messageOptions);
-    console.log(`SMS sent to ${to}: ${message.sid}`);
+    console.log(`WhatsApp message sent to ${toNumber}: ${message.sid}`);
     return message;
   } catch (error) {
-    console.error("Error sending SMS:", error);
+    console.error("Error sending WhatsApp message:", error);
     throw error;
   }
 }
+
+// Keep backward compatibility
+export const sendSms = sendWhatsAppMessage;

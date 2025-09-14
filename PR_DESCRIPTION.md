@@ -1,8 +1,10 @@
-# feat: SMS-based AI todo assistant with MCP integration
+# feat: WhatsApp-based AI todo assistant with MCP integration
 
 ## Overview
 
-This PR implements a comprehensive SMS-based todo list manager that integrates Model Context Protocol (MCP), Twilio for SMS communication, and OpenAI for natural language processing.
+This PR implements a comprehensive WhatsApp-based todo list manager that integrates Model Context Protocol (MCP), Twilio WhatsApp Business API, and OpenAI for natural language processing.
+
+**Important Update**: This implementation has been adapted from SMS to WhatsApp to avoid A2P 10DLC registration requirements for US phone numbers.
 
 ## Features Added
 
@@ -19,12 +21,12 @@ This PR implements a comprehensive SMS-based todo list manager that integrates M
 - `update_title`: Modify todo titles
 - All tools return structured content for better API integration
 
-### 3. Twilio Integration ✅
-- Webhook endpoint at `/twilio/sms` with signature validation
-- Fast TwiML acknowledgment to prevent timeouts
-- Async processing of SMS commands
-- Support for both phone numbers and messaging services
-- Mock SMS mode for development
+### 3. Twilio WhatsApp Integration ✅
+- Webhook endpoint at `/twilio/whatsapp` with signature validation
+- Support for WhatsApp Sandbox (development) and production numbers
+- Async processing of WhatsApp messages
+- Automatic 'whatsapp:' prefix handling
+- Mock WhatsApp mode for development
 
 ### 4. AI Orchestrator ✅
 - OpenAI function calling for natural language understanding
@@ -53,7 +55,7 @@ This PR implements a comprehensive SMS-based todo list manager that integrates M
 ### Security
 - Bearer token authentication for MCP endpoints
 - Twilio webhook signature validation
-- Phone number whitelist (`ALLOWED_SMS_FROM`)
+- Phone number whitelist (`ALLOWED_WHATSAPP_FROM`)
 - Environment variable configuration
 
 ### Data Persistence
@@ -76,8 +78,8 @@ The implementation has been tested with:
    - `TODO_MCP_TOKEN`
    - `TWILIO_ACCOUNT_SID`
    - `TWILIO_AUTH_TOKEN`
-   - `TWILIO_MESSAGING_SERVICE_SID` or `TWILIO_PHONE_NUMBER`
-   - `ALLOWED_SMS_FROM`
+   - `TWILIO_WHATSAPP_NUMBER` (defaults to sandbox: whatsapp:+14155238886)
+   - `ALLOWED_WHATSAPP_FROM`
    - `PUBLIC_BASE_URL`
 
 2. Deploy to Fly.io:
@@ -85,13 +87,13 @@ The implementation has been tested with:
    ./deploy.sh
    ```
 
-3. Configure Twilio webhook to `https://your-app.fly.dev/twilio/sms`
+3. Configure Twilio WhatsApp webhook to `https://your-app.fly.dev/twilio/whatsapp`
 
 ## Files Changed
 
 - **New files**:
   - `src/ai/orchestrator.ts` - AI orchestration logic
-  - `src/twilio.ts` - Twilio integration
+  - `src/twilio.ts` - Twilio WhatsApp integration
   - `Dockerfile` - Container configuration
   - `fly.toml` - Fly.io deployment config
   - `deploy.sh` - Deployment script
@@ -99,20 +101,25 @@ The implementation has been tested with:
 
 - **Modified files**:
   - `src/server.ts` - Extended data model and new tools
-  - `src/http.ts` - Added Twilio webhook route
+  - `src/http.ts` - Added WhatsApp webhook route
   - `package.json` - Added dependencies
   - `.env` - Configuration template
 
 ## Breaking Changes
 
-None - the existing MCP functionality remains intact.
+- Changed from SMS to WhatsApp messaging
+- Webhook endpoint changed from `/twilio/sms` to `/twilio/whatsapp`
+- Environment variable `ALLOWED_SMS_FROM` renamed to `ALLOWED_WHATSAPP_FROM`
+- New environment variable `TWILIO_WHATSAPP_NUMBER` replaces `TWILIO_MESSAGING_SERVICE_SID`
 
 ## Future Enhancements
 
 - Per-person todo filtering using `createdBy`
 - Due dates and reminders
 - Categories/tags for tasks
-- Voice call integration
+- WhatsApp Business API production registration
+- Message templates for proactive notifications
+- Rich media support (images, documents)
 
 ## Checklist
 

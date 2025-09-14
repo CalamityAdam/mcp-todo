@@ -252,7 +252,7 @@ async function callMcpTool(toolName: string, args: any) {
 }
 
 export async function handleSms({ from, text }: { from: string; text: string }) {
-  console.log(`Received SMS from ${from}: ${text}`);
+  console.log(`Received WhatsApp message from ${from}: ${text}`);
 
   try {
     // For testing without OpenAI API key
@@ -273,7 +273,7 @@ export async function handleSms({ from, text }: { from: string; text: string }) 
         const isOpen = text.toLowerCase().includes("open") || text.toLowerCase().includes("remaining");
         const result = await callMcpTool(isOpen ? "list_open_todos" : "list_todos", {});
         const data = JSON.parse(result.content?.[0]?.text || '{}');
-        const todos = data.todos;
+        const todos = data.todos || [];
         
         if (todos.length === 0) {
           await sendSms(from, "No tasks found.");
