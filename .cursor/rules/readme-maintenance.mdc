@@ -1,0 +1,33 @@
+---
+description: README maintenance and updates
+---
+
+# README Maintenance Rules
+
+When making changes to this project, update the [README.md](mdc:README.md) when appropriate:
+
+## When to Update README
+
+- **Scripts changes**: If you modify `package.json` scripts, update the Quick Start and Usage sections
+- **New features**: Add new tools or capabilities to the Features and Available Tools sections
+- **Configuration changes**: Update setup instructions or environment variables
+- **API changes**: Modify endpoint documentation or authentication requirements
+- **Architecture changes**: Update file descriptions in the Architecture section
+
+## README Structure Guidelines
+
+Keep the README [[memory:8698354]] - simple and minimal with these sections:
+1. **Quick Start** - Immediate commands to get running
+2. **Setup** - Installation and build steps  
+3. **Usage** - Detailed runtime instructions for both transports
+4. **Features** - High-level capabilities
+5. **Available Tools** - MCP tool reference
+6. **Resources** - MCP resource reference
+7. **Architecture** - File organization
+
+## Writing Style
+
+- Use clear, concise language appropriate for a Software Engineer 3 [[memory:6354150]]
+- Include practical examples and command snippets
+- Maintain technical accuracy without over-simplification
+- Keep it focused on essential information for getting started and understanding the project

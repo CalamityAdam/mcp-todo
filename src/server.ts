@@ -3,7 +3,6 @@ import {
   McpServer,
   ResourceTemplate,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -253,18 +252,5 @@ export function createTodoMcpServer() {
   return server;
 }
 
-// ── Keep stdio entrypoint for local dev, but guard it ──
-// Run stdio only when explicitly requested (e.g., MCP_STDIO=1)
-if (process.env.MCP_STDIO === "1") {
-  (async () => {
-    const server = createTodoMcpServer();
-    const transport = new StdioServerTransport();
-    await server.connect(transport);
-  })().catch((err) => {
-    console.error(err);
-    process.exit(1);
-  });
-} else if (process.env.MCP_STDIO === "0") {
-  // When MCP_STDIO=0, start the HTTP server
-  import("./http.js");
-}
+// Server factory only - no direct startup logic
+// HTTP server will import and use this factory

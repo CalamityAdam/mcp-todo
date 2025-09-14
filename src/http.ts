@@ -77,6 +77,11 @@ app.delete("/mcp", async (req, res) => {
   sessions.delete(sid);
 });
 
+// Health check endpoint (no auth required)
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 // Import handleSms dynamically to avoid initialization issues
 let handleSms: any;
 
@@ -119,6 +124,5 @@ app.post(
 
 const PORT = Number(process.env.PORT) || 3000;
 app.listen(PORT, () => {
-  console.log(`MCP Streamable HTTP listening on http://localhost:${PORT}/mcp`);
   console.log(`Twilio webhook at http://localhost:${PORT}/twilio/sms`);
 });

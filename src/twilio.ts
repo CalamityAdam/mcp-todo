@@ -3,7 +3,7 @@ import type { Request, Response, NextFunction } from "express";
 
 // Export Twilio webhook validation middleware
 // In development (no real Twilio auth token), skip validation
-export const twilioWebhook = process.env.TWILIO_AUTH_TOKEN?.startsWith('your-twilio-auth-token') 
+export const twilioWebhook = !process.env.TWILIO_AUTH_TOKEN || process.env.TWILIO_AUTH_TOKEN.includes('your-twilio-auth-token')
   ? (req: Request, res: Response, next: NextFunction) => next()
   : twilio.webhook({ validate: true });
 
