@@ -2,6 +2,10 @@
 
 A todo list server built with the Model Context Protocol (MCP) that supports both stdio and HTTP transports.
 
+<a href="https://glama.ai/mcp/servers/@CalamityAdam/mcp-todo">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@CalamityAdam/mcp-todo/badge" alt="Todo MCP server" />
+</a>
+
 ## Quick Start
 
 ```bash
